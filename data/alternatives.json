@@ -1,0 +1,27 @@
+{
+    "matlab": {
+        "safe_alt": "GNU Octave",
+        "url": "https://octave.org",
+        "notes": "Fully MATLAB-compatible syntax, free forever"
+    },
+    "autocad": {
+        "safe_alt": "FreeCAD",
+        "url": "https://freecad.org",
+        "notes": "Open-source, parametric 3D modeling"
+    },
+    "photoshop": {
+        "safe_alt": "GIMP or Photopea",
+        "url": "https://photopea.com",
+        "notes": "Photopea runs in-browser, no install needed"
+    },
+    "illustrator": {
+        "safe_alt": "Inkscape",
+        "url": "https://inkscape.org",
+        "notes": "Professional quality vector graphics software"
+    },
+    "office": {
+        "safe_alt": "LibreOffice",
+        "url": "https://www.libreoffice.org",
+        "notes": "Full featured open source office suite compatible with MS formats"
+    }
+}

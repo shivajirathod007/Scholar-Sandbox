@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+uploads/
+.env*
+*.log
+telemetry.txt
+__pycache__/
+*.pyc
