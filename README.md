@@ -80,6 +80,23 @@ Once the cluster is running and the model is pulled:
 3. Watch the Live Execution Feed stream realtime static scan results, Docker initialization telemetry, and `strace` system calls.
 4. When finished, review the **Teacher's AI Analysis** for a human-readable explanation of what the payload attempted to do.
 
+### 🛑 Stopping & Starting the Cluster
+
+To stop the Sandbox securely without losing your downloaded AI models:
+```bash
+docker compose stop
+```
+
+To start the cluster back up quickly:
+```bash
+docker compose start
+```
+
+*If you need to completely tear down the network and remove the containers (your downloaded AI models will persist in the volume):*
+```bash
+docker compose down
+```
+
 ---
 
 ## ⚠️ Security Warning
