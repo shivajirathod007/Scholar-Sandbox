@@ -33,7 +33,10 @@ def get_ai_explanation(telemetry: dict, file_context: dict) -> dict:
                 {'role': 'user', 'content': user_message}
             ]
         )
-        return response['message']['content']
+        content = response.message.content
+        # Strip markdown code fences Ollama sometimes adds
+        content = content.replace("```json", "").replace("```", "").strip()
+        return content
     except Exception as e:
         return json.dumps({
             "risk_score": 50,

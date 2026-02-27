@@ -32,8 +32,6 @@ def parse_strace_logs(filepath):
             # Network connections
             if 'connect(' in line:
                 ip_match = re.search(r'inet_addr\("(\d+\.\d+\.\d+\.\d+)"\)', line) 
-                if not ip_match:
-                     ip_match = re.search(r'sa_data="(\d+\.\d+\.\d+\.\d+)', line)
                 if ip_match:
                     telemetry['network_attempts'].append({
                         "ip": ip_match.group(1), "blocked": True
