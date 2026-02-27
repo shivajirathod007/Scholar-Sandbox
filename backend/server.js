@@ -45,7 +45,11 @@ const executePythonScript = (scriptPath, args) => {
         py.stderr.on('data', data => errOutput += data.toString());
 
         py.on('close', code => {
-            resolve({ code, output, errOutput });
+            if (code !== 0) {
+                reject(new Error(`Process exited with code ${code}\nStderr: ${errOutput}`));
+            } else {
+                resolve({ code, output, errOutput });
+            }
         });
     });
 };
@@ -54,18 +58,25 @@ async function runSandbox(filePath, jobId) {
     sendLog(jobId, '[DOCKER] Creating isolated container...');
 
     // Create results directory path
-    const hostDir = `/mnt/windows/AI-SCHOLER/scholar-sandbox/backend/uploads`;
+    const hostDir = path.resolve(__dirname, 'uploads');
+    const resultsDir = path.resolve(__dirname, 'results');
+    if (!fs.existsSync(resultsDir)) {
+        fs.mkdirSync(resultsDir, { recursive: true });
+    }
     const filename = path.basename(filePath);
 
     try {
         const container = await docker.createContainer({
             Image: 'scholar-sandbox-engine',
             // Run strace on our entrypoint script
-            Cmd: ['strace', '-f', '-e', 'trace=network,file,process', '-o', '/sandbox/results/telemetry.txt', '/sandbox/run_sample.sh', `/sandbox/sample/${filename}`],
+            Cmd: ['strace', '-f', '-e', 'trace=network,file,process', '-o', `/sandbox/results/telemetry_${jobId}.txt`, '/sandbox/run_sample.sh', `/sandbox/sample/${filename}`],
             HostConfig: {
                 NetworkMode: 'none',          // No internet mapped
                 ReadonlyRootfs: true,         // Read-only filesystem
-                Binds: [`${hostDir}:/sandbox/sample:ro`, `${hostDir}:/sandbox/results:rw`],
+                Binds: [
+                    `${hostDir}:/sandbox/sample:ro`,
+                    `${resultsDir}:/sandbox/results:rw`
+                ],
                 SecurityOpt: ['no-new-privileges'],
                 Memory: 512 * 1024 * 1024,    // 512MB RAM cap
             }
@@ -118,21 +129,34 @@ async function runAnalysisPipeline(filePath, jobId) {
             // Keep going to AI phase even if docker fails for now
         }
 
-        // 3. Telemetry Parser (Mock passing data for now)
+        // 3. Telemetry Parser
         sendStatus(jobId, 'parsing_telemetry');
         sendLog(jobId, 'Parsing extracted telemetry...');
-        // We would parse the strace logs here. Since we lack the Docker container setup initially,
-        // we'll pass the static results to AI.
+
+        let parsedTelemetry = { syscalls: [], network_attempts: [], file_mutations: [], threat_indicators: staticResults.yara_matches || [] };
+        const telemetryFile = path.resolve(__dirname, `results/telemetry_${jobId}.txt`);
+
+        if (fs.existsSync(telemetryFile)) {
+            const telemetryParserPath = path.resolve(__dirname, '../ai/telemetry_parser.py');
+            try {
+                const telRes = await executePythonScript(telemetryParserPath, [telemetryFile]);
+                if (telRes.output.trim()) {
+                    parsedTelemetry = JSON.parse(telRes.output);
+                }
+            } catch (e) {
+                sendLog(jobId, `[TELEMETRY REDACTION] Failed parsing: ${e.message}`);
+            }
+        } else {
+            sendLog(jobId, 'No telemetry file found, relying on static data.');
+        }
 
         // 4. AI Explanation
         sendStatus(jobId, 'generating_ai_report');
         sendLog(jobId, '--- AI ANALYSIS START ---');
         const aiPath = path.resolve(__dirname, '../ai/explain.py');
 
-        // For now we pass in stringified JSON of the staticResults as mock telemetry
-        const mockTelemetryString = JSON.stringify({
-            syscalls: [], network_attempts: [], file_mutations: [], threat_indicators: staticResults.yara_matches || []
-        });
+        // Pass actual parsed telemetry
+        const mockTelemetryString = JSON.stringify(parsedTelemetry);
 
         const contextString = JSON.stringify({
             mime_type: staticResults.mime_type || "application/octet-stream",
@@ -170,6 +194,9 @@ async function runAnalysisPipeline(filePath, jobId) {
     } catch (err) {
         sendLog(jobId, `Pipeline Error: ${err.message}`);
         sendStatus(jobId, 'error');
+    } finally {
+        try { fs.unlinkSync(filePath); } catch (e) { }
+        try { fs.unlinkSync(path.resolve(__dirname, `results/telemetry_${jobId}.txt`)); } catch (e) { }
     }
 }
 
