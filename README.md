@@ -1,46 +1,61 @@
-# 🛡️ Scholar Sandbox
+# Scholar Sandbox
 
-**Scholar Sandbox** is an AI-powered, educational malware analysis environment built for students and cybersecurity researchers to safely deconstruct, execute, and understand suspicious payloads without risking their host machines. 
+Scholar Sandbox is a controlled, educational malware analysis environment developed for students and cybersecurity researchers. The platform enables the safe deconstruction and execution of suspicious payloads without risking the host machine's integrity.
 
-By combining **Static Analysis** (YARA, PE inspection), **Dynamic Analysis** (isolated Docker-in-Docker execution with `strace`), and **Generative AI** (Mistral 7B via Ollama), this platform provides a comprehensive and easy-to-understand breakdown of potential threats.
-
----
-
-## 🚀 Features
-
-- **Drag-and-Drop Interface**: A premium, cinematic Next.js frontend with real-time WebSocket telemetry streaming.
-- **Static Pre-Scanner**: Python-based static analysis engine that extracts MIME types, detects extension mismatches, and runs YARA malware rules against uploaded binaries.
-- **Isolated Sandbox Engine**: Executes payloads in a headless, network-restricted, read-only Ubuntu Docker container with hardware limits, dumping system calls via `strace`.
-- **AI-Powered "Teacher" Explanations**: Integrates with local LLMs (Mistral 7B) to translate complex hexadecimal and system calls into plain English threat intelligence reports.
-- **Educational UI State**: Displays cycling cybersecurity history facts during payload processing.
+By combining Static Analysis, Dynamic Analysis via sandboxing, and Generative AI, Scholar Sandbox provides a comprehensive and accessible breakdown of potential threats and low-level system interactions.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-The project is built around a microservice architecture orchestrated via Docker Compose:
+The project employs a microservices architecture orchestrated via Docker Compose.
 
-1. **Frontend (`/frontend`)**: Next.js 14, React, Tailwind CSS, socket.io-client.
-2. **Backend Engine (`/backend`)**: Node.js, Express, Dockerode (for dynamic container spinning), WebSockets. 
-3. **Static Scanner (`/scanner`)**: Python 3, `python-magic`, `yara-python`.
-4. **Sandbox Box (`/sandbox`)**: Read-only `ubuntu:22.04` Docker image pre-installed with `strace` and interpreters to safely run the payload.
-5. **AI Pipeline (`/ai`)**: Python 3 `ollama` SDK communicating with a standalone `ollama/ollama` Docker container.
+```mermaid
+graph TD
+    User([User / Browser]) -->|HTTPS/WSS| Frontend
+    
+    subgraph "Docker Compose Network"
+        Frontend[Frontend Node.js\nNext.js Application]
+        Backend[Backend Node.js\nExpress + Socket.io]
+        Scanner[Static Scanner\nYARA + Magic]
+        Ollama((Ollama AI Engine\nMistral 7B))
+        
+        subgraph "Ephemeral Execution"
+            Sandbox[Read-Only Ubuntu Container\nstrace System Telemetry]
+        end
+    end
+
+    Frontend <-->|REST API + WebSockets| Backend
+    Backend -->|Spawn| Scanner
+    Backend -->|Spawn via Dockerode| Sandbox
+    Backend <-->|API| Ollama
+    
+    Sandbox -.->|Telemetry Stream| Backend
+```
+
+### Components
+
+1. **Frontend (`/frontend`)**: Next.js 14 application providing a realtime telemetry dashboard and WebSocket streaming capabilities.
+2. **Backend Engine (`/backend`)**: Node.js and Express server responsible for API routing, Dockerode integration for dynamic container spinning, and WebSocket broadcast.
+3. **Static Scanner (`/scanner`)**: Python 3 engine utilizing `python-magic` for accurate file typing and `yara-python` for rule-based static malware detection.
+4. **Sandbox Box (`/sandbox`)**: A heavily restricted, read-only `ubuntu:22.04` Docker image pre-installed with `strace`. It executes the payload and logs system calls unconditionally.
+5. **AI Pipeline (`/ai`)**: Python 3 scripts utilizing the Ollama SDK to query a locally hosted Mistral 7B model, translating raw telemetry into readable threat intelligence.
 
 ---
 
-## ⚙️ Prerequisites
+## Prerequisites
 
-Before running the sandbox, ensure your system has the following installed:
+Ensure the deployment host meets the following requirements:
 
 1. **Docker Engine**: Installed and running.
-2. **Docker Compose Plugin**: To orchestrate the services.
-3. **Ollama**: (Handled by Docker Compose, but requires internet access to initially download the 4.4GB Mistral model).
+2. **Docker Compose Plugin**: Required for service orchestration.
+3. **Local Storage**: Minimum 5GB free space for the Ollama Mistral model weights.
 
-*Note: Since the backend spawns dynamic Docker containers on the fly, it requires access to the host's `/var/run/docker.sock`.*
+*Note: The backend service requires access to the host's `/var/run/docker.sock` to dynamically provision and tear down ephemeral sandbox containers.*
 
 ---
 
-## 🛠️ Installation & Setup
+## Installation & Deployment
 
 1. **Clone the repository:**
    ```bash
@@ -48,62 +63,57 @@ Before running the sandbox, ensure your system has the following installed:
    cd Scholar-Sandbox
    ```
 
-2. **(Optional) Build the Local Sandbox Engine:**
-   *The backend relies on the `scholar-sandbox-engine` image to run payloads. If it is not built, the dynamic analysis phase will gracefully fallback.*
-   ```bash
-   cd sandbox
-   docker build -t scholar-sandbox-engine .
-   cd ..
-   ```
-
-3. **Spin up the Cluster:**
-   This command will build the frontend and backend Node.js images, and pull down the Ollama engine.
+2. **Initialize the Docker Cluster:**
+   This command builds the frontend and backend Node.js images, and provisions the Ollama database volume.
    ```bash
    docker compose --profile ollama up --build -d
    ```
 
-4. **Pull the AI Model:**
-   Since the Ollama image ships empty, you must download the Mistral 7B brain. Run this command while the cluster is running:
+3. **Install the AI Model Pipeline:**
+   The Ollama image is deployed empty. You must download the Mistral 7B weights. Run this command while the cluster is running:
    ```bash
    docker exec scholar-sandbox-ollama-1 ollama pull mistral
    ```
-   *(This downloads ~4.4GB of weights. You only ever have to run this once).*
+   *(This downloads approximately 4.4GB of weights. This operation is only required once).*
 
 ---
 
-## 💻 Usage
+## Operation Instructions
 
-Once the cluster is running and the model is pulled:
+Once the cluster is initialized and the model is pulled:
 
-1. Navigate to **[http://localhost:3000](http://localhost:3000)** in your web browser.
-2. Drag and drop any suspicious file (e.g., an executable, a script, or a PDF macro).
-3. Watch the Live Execution Feed stream realtime static scan results, Docker initialization telemetry, and `strace` system calls.
-4. When finished, review the **Teacher's AI Analysis** for a human-readable explanation of what the payload attempted to do.
+1. Navigate to `http://localhost:3000` in a supported web browser.
+2. Upload a permitted file type (e.g., executable, script, or document) into the drop zone.
+3. Monitor the Live Execution Feed for realtime static and dynamic analysis events.
+4. Upon completion, review the Threat Intelligence Report for the AI-generated vulnerability assessment.
 
-### 🛑 Stopping & Starting the Cluster
+### Lifecycle Management
 
-To stop the Sandbox securely without losing your downloaded AI models:
-```bash
-docker compose stop
-```
+- **Suspend Operation**: To stop the services cautiously without data loss:
+  ```bash
+  docker compose stop
+  ```
 
-To start the cluster back up quickly:
-```bash
-docker compose start
-```
+- **Resume Operation**: To spin the cluster back up from a suspended state:
+  ```bash
+  docker compose start
+  ```
 
-*If you need to completely tear down the network and remove the containers (your downloaded AI models will persist in the volume):*
-```bash
-docker compose down
-```
+- **Full Teardown**: To completely destroy the cluster networking and container instances (AI weights will persist in the volume):
+  ```bash
+  docker compose down
+  ```
 
 ---
 
-## ⚠️ Security Warning
+## Security Advisories & Limitations
 
-**DO NOT** run this application in a production environment exposed to the open internet without severe modifications. 
-- The backend mounts the host Docker socket (`/var/run/docker.sock`), meaning a compromise of the backend Node.js server grants root access to the host machine.
-- This project is designed exclusively for *local*, educational, and controlled research environments.
+**UNSUPPORTED FOR PRODUCTION USAGE**
 
-## 📄 License
+Consider the following critical security limitations:
+- The backend mounts the host Docker socket (`/var/run/docker.sock`). A compromise of the backend Node.js server theoretically allows sandbox escapes granting root access to the host machine.
+- This project is strictly designed for local, educational, and controlled research environments. Do not expose the dashboard or backend API to the open internet.
+
+## License
+
 See the `LICENSE` file for more details.
