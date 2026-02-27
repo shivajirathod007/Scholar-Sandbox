@@ -25,7 +25,10 @@ def get_ai_explanation(telemetry: dict, file_context: dict) -> dict:
     """
     
     try:
-        client = ollama.Client(host='http://ollama:11434')
+        # Use host.docker.internal to reach Ollama if it's running on the host, 
+        # or the explicitly provided host
+        ollama_host = os.environ.get('OLLAMA_HOST', 'http://ollama:11434')
+        client = ollama.Client(host=ollama_host)
         response = client.chat(
             model='mistral',
             messages=[
@@ -41,10 +44,10 @@ def get_ai_explanation(telemetry: dict, file_context: dict) -> dict:
         return json.dumps({
             "risk_score": 50,
             "threat_category": "Unknown",
-            "plain_explanation": f"AI model failed to respond: {str(e)}",
+            "plain_explanation": f"AI model failed to respond: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download",
             "technical_summary": "Ollama connection or inference error",
             "safe_alternative": "N/A",
-            "learning_tip": "Check if Ollama service is running and 'mistral' is pulled."
+            "learning_tip": f"Check if Ollama service is running. Details: {str(e)}"
         })
 
 if __name__ == "__main__":

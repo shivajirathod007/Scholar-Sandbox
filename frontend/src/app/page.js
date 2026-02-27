@@ -27,7 +27,7 @@ export default function Dashboard() {
     if (status === 'idle' || status === 'complete' || status === 'error') return;
     const interval = setInterval(() => {
       setFactIndex((prev) => (prev + 1) % CYBER_FACTS.length);
-    }, 6000); // Wait 6 seconds before cycling to next story
+    }, 10000); // 10 second break between facts for readability
     return () => clearInterval(interval);
   }, [status]);
 
@@ -92,7 +92,7 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen bg-[#060913] text-slate-200 p-4 xl:p-8 font-sans selection:bg-indigo-500/30 overflow-hidden">
-      <div className="max-w-[1400px] mx-auto space-y-8 relative">
+      <div className="max-w-[1600px] w-full mx-auto space-y-8 relative">
 
         {/* Background glow effects - strictly decorative */}
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none -z-10 mix-blend-screen"></div>
@@ -106,20 +106,23 @@ export default function Dashboard() {
               <Shield className="w-8 h-8 text-white" strokeWidth={1.5} />
             </div>
           </div>
-          <div>
-            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
-              Scholar Sandbox
+          <div className="flex-1">
+            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight flex items-center flex-wrap gap-4">
+              SCHOLAR SHIELD
+              <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-xs font-black tracking-widest uppercase shadow-inner">
+                Intelligence Dashboard
+              </span>
             </h1>
-            <p className="text-blue-400 font-medium tracking-wide text-[15px] mt-1 flex items-center">
-              <Eye className="w-4 h-4 mr-2 opacity-80" /> AI-Powered Educational Threat Intelligence
+            <p className="text-slate-400 font-medium tracking-wide text-[14px] mt-3 leading-relaxed max-w-4xl">
+              <span className="text-blue-400 font-bold opacity-100"><Eye className="w-4 h-4 inline mr-1 -mt-0.5" /> AI-Powered Malware Analysis, Explained in Plain English.</span> We dive deep into technical telemetry to show you exactly how threats operate across the filesystem and network, while suggesting safe, open-source alternatives.
             </p>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 min-h-[700px] h-[calc(100vh-140px)] pb-6 relative z-10">
 
           {/* Left Column: Upload & Logs */}
-          <div className="xl:col-span-4 flex flex-col space-y-6">
+          <div className="lg:col-span-4 xl:col-span-4 flex flex-col space-y-6 h-full">
 
             {/* Target Acquisition Card */}
             <div className="bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all duration-300">
@@ -175,7 +178,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="flex-1 min-h-[300px] xl:h-[450px] overflow-y-auto bg-[#04060C] p-6 font-mono text-[13px] text-emerald-400/90 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+              <div className="flex-1 h-0 overflow-y-auto bg-[#04060C] p-6 font-mono text-[13px] text-emerald-400/90 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 {logs.length === 0 ? (
                   <div className="flex items-center text-slate-600 space-x-3 opacity-60">
                     <span className="animate-pulse w-2 h-5 bg-slate-600"></span>
@@ -204,8 +207,8 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column: Dashboard Results */}
-          <div className="xl:col-span-8 flex flex-col">
-            <div className={`bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-10 shadow-2xl flex-1 flex flex-col relative overflow-hidden transition-all duration-700
+          <div className="lg:col-span-8 xl:col-span-8 flex flex-col h-full">
+            <div className={`bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 xl:p-10 shadow-2xl flex-1 flex flex-col relative overflow-hidden transition-all duration-700 h-full
                 ${results ? 'ring-1 ring-white/10' : ''}`}>
 
               {/* Background watermark icon */}
@@ -220,71 +223,81 @@ export default function Dashboard() {
 
               {!results ? (
                 // LOADING / IDLE STATES
-                <div className="flex-1 flex flex-col w-full">
+                <div className="flex-1 flex flex-col w-full h-full">
                   {(status !== 'idle' && status !== 'error' && status !== 'complete') ? (
-                    <div className="flex flex-col items-center justify-center h-full px-4 animate-in fade-in zoom-in-95 duration-500 w-full max-w-3xl mx-auto">
+                    <div className="flex flex-col items-center justify-center w-full h-full px-4 animate-in fade-in zoom-in-95 duration-500">
 
-                      {/* Premium Loading Spinner Component */}
-                      <div className="relative mb-14 mt-4">
-                        <div className="absolute inset-0 bg-blue-500 rounded-full blur-[60px] opacity-20 animate-pulse duration-[2000ms]"></div>
-                        <div className="relative w-40 h-40">
-                          {/* Outer ring */}
-                          <svg className="animate-[spin_4s_linear_infinite] w-full h-full text-blue-500/10" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="48" fill="none" strokeWidth="2" strokeDasharray="20 10" />
-                          </svg>
-                          {/* Mid ring backward */}
-                          <svg className="animate-[spin_3s_linear_infinite_reverse] absolute inset-0 w-full h-full text-indigo-400/30" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="38" fill="none" strokeWidth="3" strokeDasharray="30 15 10 15" />
-                          </svg>
-                          {/* Inner solid spinner */}
-                          <svg className="animate-spin absolute inset-0 w-full h-full text-blue-500" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="48" fill="none" strokeWidth="1.5" strokeDasharray="60 250" strokeLinecap="round" />
-                          </svg>
-                          {/* Center badge */}
-                          <div className="absolute inset-0 flex items-center justify-center bg-[#070B14] rounded-full backdrop-blur-md m-5 border border-white/10 shadow-[inner_0_0_20px_rgba(59,130,246,0.2)]">
-                            <Activity className="w-10 h-10 text-blue-400 animate-pulse" />
+                      {/* Analysis Header */}
+                      <div className="flex items-center space-x-6 mb-10 w-full max-w-4xl bg-black/40 border border-white/5 rounded-2xl p-6 backdrop-blur-md">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-blue-500 rounded-full blur-[20px] opacity-40 animate-pulse"></div>
+                          <div className="relative w-16 h-16 bg-[#070B14] rounded-full border border-blue-500/30 flex items-center justify-center">
+                            <Activity className="w-6 h-6 text-blue-400 animate-pulse" />
                           </div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold text-white tracking-tight">Interrogating Payload</h3>
+                          <p className="text-slate-400 mt-1">Decompiling binary, tracing syscalls, and querying Mistral AI models...</p>
                         </div>
                       </div>
 
-                      <h3 className="text-3xl font-bold text-white tracking-tight mb-3">Interrogating Payload</h3>
-                      <p className="text-slate-400 mb-14 text-center max-w-sm text-lg">
-                        Decompiling binary, tracing syscalls, and querying Mistral AI models...
-                      </p>
+                      {/* Prominent Cyber Fact Display - Psychological Engagement */}
+                      <div className="w-full max-w-4xl flex-1 flex flex-col justify-center relative group min-h-[300px]">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[300px] bg-blue-500/5 blur-[120px] pointer-events-none rounded-full"></div>
 
-                      {/* Cyber Fact Display */}
-                      <div className="w-full bg-black/40 border border-white/5 rounded-3xl p-8 backdrop-blur-md relative overflow-hidden group">
-                        {/* Glowing line overlay */}
-                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-400 via-indigo-500 to-purple-500 opacity-80"></div>
+                        <div className="relative z-10 bg-gradient-to-br from-[#0a1520] to-[#04060c] border border-blue-500/20 rounded-[2rem] p-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden h-full flex flex-col">
+                          {/* Progress Line */}
+                          <div className="absolute top-0 left-0 h-1.5 bg-[#060913] w-full">
+                            <div
+                              key={`progress-${factIndex}`}
+                              className="h-full bg-gradient-to-r from-blue-400 to-emerald-400"
+                              style={{ animation: 'loadBar 10s linear', width: '100%' }}
+                            ></div>
+                          </div>
 
-                        <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity duration-1000 translate-x-1/4 translate-y-1/4">
-                          <Database className="w-40 h-40 object-cover" />
-                        </div>
+                          <style>{`
+                            @keyframes loadBar {
+                              from { width: 0%; }
+                              to { width: 100%; }
+                            }
+                          `}</style>
 
-                        <h4 className="text-[11px] font-black uppercase tracking-[0.25em] text-blue-400 mb-4 flex items-center">
-                          <Info className="w-4 h-4 mr-2" /> Did you know?
-                        </h4>
+                          <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity duration-1000 rotate-12 pointer-events-none">
+                            <Database className="w-64 h-64" />
+                          </div>
 
-                        <div className="min-h-[140px] flex flex-col justify-center relative z-10 pr-10">
-                          <h5
-                            key={`title-${factIndex}`}
-                            className="text-2xl font-bold text-white mb-3 animate-in fade-in slide-in-from-right-4 duration-700">
-                            {CYBER_FACTS[factIndex].title}
-                          </h5>
-                          <p
-                            key={`text-${factIndex}`}
-                            className="text-[16px] text-slate-300 leading-relaxed font-medium animate-in fade-in slide-in-from-right-4 duration-1000 delay-150 fill-mode-both">
-                            {CYBER_FACTS[factIndex].text}
-                          </p>
-                        </div>
-
-                        {/* Progress indicators */}
-                        <div className="flex space-x-2 mt-8 items-center relative z-10">
-                          {CYBER_FACTS.map((_, i) => (
-                            <div key={i} className={`h-1.5 rounded-full transition-all duration-700 ease-out
-                                    ${i === factIndex ? 'w-8 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'w-2 bg-slate-800'}`}>
+                          <div className="flex items-center mb-8">
+                            <div className="bg-blue-500/10 text-blue-400 px-4 py-2 rounded-full border border-blue-500/20 font-black text-[11px] uppercase tracking-[0.25em] flex items-center shadow-inner">
+                              <Info className="w-4 h-4 mr-2" /> Security Intelligence Fact
                             </div>
-                          ))}
+                            <div className="ml-auto text-slate-500 font-mono text-sm font-bold tracking-widest">
+                              {String(factIndex + 1).padStart(2, '0')} / {String(CYBER_FACTS.length).padStart(2, '0')}
+                            </div>
+                          </div>
+
+                          <div className="flex-1 flex flex-col justify-center relative z-10">
+                            <h5
+                              key={`title-${factIndex}`}
+                              className="text-3xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200 mb-6 tracking-tight leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700"
+                            >
+                              {CYBER_FACTS[factIndex].title}
+                            </h5>
+                            <p
+                              key={`text-${factIndex}`}
+                              className="text-lg lg:text-xl text-slate-300 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-150 fill-mode-both max-w-3xl"
+                            >
+                              {CYBER_FACTS[factIndex].text}
+                            </p>
+                          </div>
+
+                          {/* Dot indicators */}
+                          <div className="flex space-x-3 items-center justify-center relative z-10 mt-auto pt-8">
+                            {CYBER_FACTS.map((_, i) => (
+                              <div key={i} className={`h-2 rounded-full transition-all duration-700 ease-out 
+                                ${i === factIndex ? 'w-12 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'w-2 bg-slate-700'}`}>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
