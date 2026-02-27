@@ -4,6 +4,7 @@ import yara
 import json
 import sys
 import os
+import hashlib
 
 def check_suspicious_imports(imports):
     BAD = ['keylogger', 'GetAsyncKeyState', 'CryptEncrypt', 'WinExec', 'CreateRemoteThread', 'WriteProcessMemory', 'VirtualAllocEx']
@@ -28,7 +29,8 @@ def scan(filepath):
         'imports': [],
         'suspicious_imports': [],
         'yara_matches': [],
-        'is_suspicious': False
+        'is_suspicious': False,
+        'sha256': 'unknown'
     }
     
     try:
@@ -40,6 +42,11 @@ def scan(filepath):
         file_type = magic.from_file(filepath, mime=True)
         results['mime_type'] = file_type
         results['extension_mismatch'] = check_extension_mismatch(filepath, file_type)
+        
+        # Calculate SHA256
+        with open(filepath, 'rb') as f:
+            file_hash = hashlib.sha256(f.read()).hexdigest()
+        results['sha256'] = file_hash
         
         # PE analysis for executables
         if 'executable' in file_type or 'x-dosexec' in file_type or 'pe' in file_type.lower():

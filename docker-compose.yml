@@ -14,6 +14,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock # Docker-in-Docker
       # Use an absolute or relative path that maps to ./backend/uploads on host if needed
       - ./backend/uploads:/app/backend/uploads
+      - ./backend/results:/app/backend/results
+    environment:
+      - HOST_UPLOADS_DIR=${PWD}/backend/uploads
+      - HOST_RESULTS_DIR=${PWD}/backend/results
     depends_on: [ ollama ]
 
   ollama:
@@ -22,11 +26,11 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     # Remove devices section if not running on AMD GPU or if you want it to fall back to CPU easily
-    # devices:
-    #  - /dev/kfd
-    #  - /dev/dri
+    devices:
+      - /dev/dri
     environment:
       - OLLAMA_NUM_GPU=1
+      - OLLAMA_VULKAN=1
 
 volumes:
   ollama_data:

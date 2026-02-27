@@ -91,7 +91,7 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-[#060913] text-slate-200 p-4 xl:p-8 font-sans selection:bg-indigo-500/30 overflow-hidden">
+    <main className="min-h-screen bg-[#060913] text-slate-200 p-4 xl:p-8 font-sans selection:bg-indigo-500/30 overflow-x-hidden">
       <div className="max-w-[1600px] w-full mx-auto space-y-8 relative">
 
         {/* Background glow effects - strictly decorative */}
@@ -119,7 +119,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 min-h-[700px] h-[calc(100vh-140px)] pb-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 min-h-[calc(100vh-140px)] pb-6 relative z-10">
 
           {/* Left Column: Upload & Logs */}
           <div className="lg:col-span-4 xl:col-span-4 flex flex-col space-y-6 h-full">
@@ -245,7 +245,7 @@ export default function Dashboard() {
                       <div className="w-full max-w-4xl flex-1 flex flex-col justify-center relative group min-h-[300px]">
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[300px] bg-blue-500/5 blur-[120px] pointer-events-none rounded-full"></div>
 
-                        <div className="relative z-10 bg-gradient-to-br from-[#0a1520] to-[#04060c] border border-blue-500/20 rounded-[2rem] p-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden h-full flex flex-col">
+                        <div className="relative z-10 bg-gradient-to-br from-[#0a1520] to-[#04060c] border border-blue-500/20 rounded-[2rem] p-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex-1 flex flex-col">
                           {/* Progress Line */}
                           <div className="absolute top-0 left-0 h-1.5 bg-[#060913] w-full">
                             <div

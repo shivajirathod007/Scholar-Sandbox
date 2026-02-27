@@ -20,6 +20,7 @@ def get_ai_explanation(telemetry: dict, file_context: dict) -> dict:
     user_message = f"""
     Analyze this file behavior:
     File Type: {file_context.get('mime_type')}
+    SHA256: {file_context.get('sha256', 'unknown')}
     Disguised As: {file_context.get('disguised_as', 'unknown')}
     Telemetry: {json.dumps(telemetry, indent=2)}
     """

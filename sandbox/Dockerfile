@@ -1,7 +1,8 @@
 FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y \
     strace inotify-tools net-tools curl \
-    python3 wine \
+    python3 wine file wget bash exiftool \
+    --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /sandbox

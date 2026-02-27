@@ -14,8 +14,17 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
 const docker = new Docker(); // connects to /var/run/docker.sock by default
+const storage = multer.diskStorage({
+    destination: 'uploads/',
+    filename: (req, file, cb) => {
+        // Keep original extension: abc123.sh, abc123.exe etc.
+        const ext = path.extname(file.originalname);
+        cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+    }
+});
+
 const upload = multer({
-    dest: 'uploads/',
+    storage: storage,
     limits: { fileSize: 50 * 1024 * 1024 }
 });
 
@@ -58,18 +67,22 @@ async function runSandbox(filePath, jobId) {
     sendLog(jobId, '[DOCKER] Creating isolated container...');
 
     // Create results directory path
-    const hostDir = path.resolve(__dirname, 'uploads');
-    const resultsDir = path.resolve(__dirname, 'results');
-    if (!fs.existsSync(resultsDir)) {
-        fs.mkdirSync(resultsDir, { recursive: true });
+    const internalUploadsDir = path.resolve(__dirname, 'uploads');
+    const internalResultsDir = path.resolve(__dirname, 'results');
+    if (!fs.existsSync(internalResultsDir)) {
+        fs.mkdirSync(internalResultsDir, { recursive: true });
     }
+
+    // The Docker daemon runs on the host, so we need the host's absolute path to bind mount
+    const hostDir = process.env.HOST_UPLOADS_DIR || internalUploadsDir;
+    const resultsDir = process.env.HOST_RESULTS_DIR || internalResultsDir;
     const filename = path.basename(filePath);
 
     try {
         const container = await docker.createContainer({
             Image: 'scholar-sandbox-engine',
-            // Run strace on our entrypoint script
-            Cmd: ['strace', '-f', '-e', 'trace=network,file,process', '-o', `/sandbox/results/telemetry_${jobId}.txt`, '/sandbox/run_sample.sh', `/sandbox/sample/${filename}`],
+            // Run strace ONLY on the analyzed file inside the wrapper, not on the wrapper script itself
+            Cmd: ['/sandbox/run_sample.sh', `/sandbox/sample/${filename}`, `/sandbox/results/telemetry_${jobId}.txt`, `/sandbox/results/metadata_${jobId}.txt`],
             HostConfig: {
                 NetworkMode: 'none',          // No internet mapped
                 ReadonlyRootfs: true,         // Read-only filesystem
@@ -141,13 +154,32 @@ async function runAnalysisPipeline(filePath, jobId) {
             try {
                 const telRes = await executePythonScript(telemetryParserPath, [telemetryFile]);
                 if (telRes.output.trim()) {
-                    parsedTelemetry = JSON.parse(telRes.output);
+                    const parsed = JSON.parse(telRes.output);
+                    parsedTelemetry = {
+                        ...parsedTelemetry,
+                        ...parsed,
+                        threat_indicators: [...new Set([...(parsedTelemetry.threat_indicators || []), ...(parsed.threat_indicators || [])])]
+                    };
                 }
             } catch (e) {
                 sendLog(jobId, `[TELEMETRY REDACTION] Failed parsing: ${e.message}`);
             }
         } else {
-            sendLog(jobId, 'No telemetry file found, relying on static data.');
+            sendLog(jobId, 'No execution telemetry file found, relying on static data.');
+        }
+
+        const metadataFile = path.resolve(__dirname, `results/metadata_${jobId}.txt`);
+        if (fs.existsSync(metadataFile)) {
+            try {
+                const metadataContent = fs.readFileSync(metadataFile, 'utf8');
+                if (metadataContent.trim().length > 0) {
+                    parsedTelemetry.extracted_metadata = metadataContent.split('\n').filter(l => l.trim().length > 0).slice(0, 30);
+                    sendLog(jobId, 'Extracted metadata incorporated into AI context.');
+                }
+                fs.unlinkSync(metadataFile);
+            } catch (e) {
+                console.error("Error reading metadata file:", e);
+            }
         }
 
         // 4. AI Explanation
@@ -160,6 +192,7 @@ async function runAnalysisPipeline(filePath, jobId) {
 
         const contextString = JSON.stringify({
             mime_type: staticResults.mime_type || "application/octet-stream",
+            sha256: staticResults.sha256 || "unknown",
             disguised_as: staticResults.extension_mismatch ? "mismatched extension" : "unknown"
         });
 
