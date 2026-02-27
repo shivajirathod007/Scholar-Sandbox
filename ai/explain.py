@@ -2,26 +2,19 @@ import json
 import sys
 import ollama
 
-SYSTEM_PROMPT = """
-You are a cybersecurity teacher explaining threats to a first-year engineering student.
-Given behavioral telemetry from a file analysis, you must:
-1. Explain in simple, jargon-free language what the file tried to do
-2. Name the threat category (Infostealer / Ransomware / Trojan / Adware / Clean)
-3. Explain why this is dangerous to the student personally
-4. Suggest a free, safe alternative if the file was a cracked tool
-5. Give one practical learning tip
+import os
 
-NEVER use technical terms without immediately explaining them in brackets.
-Always respond in this exact JSON format:
-{
-  "risk_score": <0-100>,
-  "threat_category": "<category>",
-  "plain_explanation": "<2-3 sentences in plain English>",
-  "technical_summary": "<brief technical detail>",
-  "safe_alternative": "<specific tool name and URL>",
-  "learning_tip": "<one actionable tip>"
-}
-"""
+def load_system_prompt() -> str:
+    """Loads the AI system prompt from the prompts directory."""
+    prompt_path = os.path.join(os.path.dirname(__file__), 'prompts', 'system_prompt.txt')
+    try:
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        print(json.dumps({"error": "System prompt file not found."}))
+        sys.exit(1)
+
+SYSTEM_PROMPT = load_system_prompt()
 
 def get_ai_explanation(telemetry: dict, file_context: dict) -> dict:
     user_message = f"""

@@ -10,18 +10,20 @@ By combining Static Analysis, Dynamic Analysis via sandboxing, and Generative AI
 
 The project employs a microservices architecture orchestrated via Docker Compose.
 
+![Scholar Sandbox UI Demo](docs/assets/demo.png)
+
 ```mermaid
 graph TD
-    User([User / Browser]) -->|HTTPS/WSS| Frontend
+    User(["User / Browser"]) -->|HTTPS/WSS| Frontend
     
     subgraph "Docker Compose Network"
-        Frontend[Frontend Node.js\nNext.js Application]
-        Backend[Backend Node.js\nExpress + Socket.io]
-        Scanner[Static Scanner\nYARA + Magic]
-        Ollama((Ollama AI Engine\nMistral 7B))
+        Frontend["Frontend Node.js<br>Next.js Application"]
+        Backend["Backend Node.js<br>Express + Socket.io"]
+        Scanner["Static Scanner<br>YARA + Magic"]
+        Ollama(("Ollama AI Engine<br>Mistral 7B"))
         
         subgraph "Ephemeral Execution"
-            Sandbox[Read-Only Ubuntu Container\nstrace System Telemetry]
+            Sandbox["Read-Only Ubuntu Container<br>strace System Telemetry"]
         end
     end
 

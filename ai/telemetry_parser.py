@@ -3,6 +3,20 @@ import json
 import sys
 
 def parse_strace_logs(filepath):
+    """
+    Parses raw `strace` output from the Docker sandbox.
+    Uses regex and heuristics to identify malicious system calls.
+    
+    Args:
+        filepath (str): Path to the strace log text file.
+        
+    Returns:
+        Prints a JSON string containing categorized telemetry arrays:
+        - syscalls: Suspicious file access patterns
+        - network_attempts: Detected IP addresses the payload tried to contact
+        - file_mutations: Attempts to write to persistence locations
+        - threat_indicators: High-level tags (e.g., 'credential_access')
+    """
     telemetry = {
         "syscalls": [],
         "network_attempts": [],
