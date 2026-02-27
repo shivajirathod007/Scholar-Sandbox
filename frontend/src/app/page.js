@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [factIndex, setFactIndex] = useState(0);
 
   useEffect(() => {
-    if (status !== 'uploading' && status !== 'analyzing') return;
+    if (status === 'idle' || status === 'complete' || status === 'error') return;
     const interval = setInterval(() => {
       setFactIndex((prev) => (prev + 1) % CYBER_FACTS.length);
     }, 6000); // Wait 6 seconds before cycling to next story
@@ -221,7 +221,7 @@ export default function Dashboard() {
               {!results ? (
                 // LOADING / IDLE STATES
                 <div className="flex-1 flex flex-col w-full">
-                  {(status === 'uploading' || status === 'analyzing') ? (
+                  {(status !== 'idle' && status !== 'error' && status !== 'complete') ? (
                     <div className="flex flex-col items-center justify-center h-full px-4 animate-in fade-in zoom-in-95 duration-500 w-full max-w-3xl mx-auto">
 
                       {/* Premium Loading Spinner Component */}
