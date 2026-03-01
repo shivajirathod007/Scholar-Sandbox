@@ -16,6 +16,40 @@ const CYBER_FACTS = [
   { title: "Phishing Origins", text: "The term 'phishing' was coined around 1996 by hackers stealing AOL accounts. They used the 'ph' spelling as a nod to 'phreaking' (early telephone hacking)." },
 ];
 
+const CustomShieldLogo = ({ className }) => (
+  <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="shieldGrad" x1="50" y1="0" x2="50" y2="100" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#38bdf8" />
+        <stop offset="1" stopColor="#3b82f6" />
+      </linearGradient>
+      <linearGradient id="innerGrad" x1="50" y1="10" x2="50" y2="90" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#0f172a" />
+        <stop offset="0.5" stopColor="#1e3a8a" />
+        <stop offset="1" stopColor="#020617" />
+      </linearGradient>
+      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+      <pattern id="binaryPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+        <text x="0" y="10" fill="#38bdf8" fontSize="8" fontFamily="monospace" opacity="0.15">10</text>
+        <text x="10" y="18" fill="#38bdf8" fontSize="8" fontFamily="monospace" opacity="0.15">01</text>
+      </pattern>
+    </defs>
+
+    <path d="M50 5 L90 20 L90 50 C90 75 50 95 50 95 C50 95 10 75 10 50 L10 20 Z" fill="url(#innerGrad)" />
+    <path d="M50 5 L90 20 L90 50 C90 75 50 95 50 95 C50 95 10 75 10 50 L10 20 Z" fill="url(#binaryPattern)" />
+    <path d="M50 5 L90 20 L90 50 C90 75 50 95 50 95 C50 95 10 75 10 50 L10 20 Z" stroke="url(#shieldGrad)" strokeWidth="2.5" />
+    <path d="M50 10 L84 22 L84 49 C84 71 50 88 50 88 C50 88 16 71 16 49 L16 22 Z" stroke="#38bdf8" strokeWidth="0.5" strokeOpacity="0.5" />
+
+    <rect x="36" y="46" width="28" height="22" rx="3" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" filter="url(#glow)" />
+    <path d="M40 46 V 36 C 40 30 60 30 60 36 V 46" fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" filter="url(#glow)" />
+    <circle cx="50" cy="54" r="2.5" fill="#38bdf8" filter="url(#glow)" />
+    <path d="M48.5 56 L47.5 61 H52.5 L51.5 56 Z" fill="#38bdf8" filter="url(#glow)" />
+  </svg>
+);
+
 export default function Dashboard() {
   const [jobId, setJobId] = useState(null);
   const [status, setStatus] = useState('idle'); // idle, uploading, analyzing, complete, error
@@ -101,9 +135,9 @@ export default function Dashboard() {
         {/* Header */}
         <header className="flex items-center space-x-6 pb-6 border-b border-white/5 backdrop-blur-md">
           <div className="relative group cursor-pointer">
-            <div className="absolute inset-0 bg-blue-500 blur-xl opacity-30 group-hover:opacity-60 transition-opacity duration-500 rounded-2xl"></div>
-            <div className="relative bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-2xl border border-white/20 shadow-2xl">
-              <Shield className="w-8 h-8 text-white" strokeWidth={1.5} />
+            <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-2xl"></div>
+            <div className="relative bg-black/40 p-3 rounded-2xl border border-blue-500/30 shadow-2xl backdrop-blur-md">
+              <CustomShieldLogo className="w-12 h-12" />
             </div>
           </div>
           <div className="flex-1">
@@ -119,13 +153,13 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 min-h-[calc(100vh-140px)] pb-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 lg:h-[calc(100vh-140px)] min-h-[calc(100vh-140px)] pb-6 relative z-10">
 
           {/* Left Column: Upload & Logs */}
-          <div className="lg:col-span-4 xl:col-span-4 flex flex-col space-y-6 h-full">
+          <div className="lg:col-span-4 xl:col-span-4 flex flex-col space-y-6 h-full min-h-0">
 
             {/* Target Acquisition Card */}
-            <div className="bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all duration-300">
+            <div className="bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all duration-300 shrink-0">
               <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-bl-[100px] pointer-events-none"></div>
 
               <h2 className="text-lg font-bold text-white mb-6 flex items-center tracking-wide">
@@ -165,7 +199,7 @@ export default function Dashboard() {
             </div>
 
             {/* Live Telemetry / Execution Feed */}
-            <div className="bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col flex-1 transform transition-all duration-300">
+            <div className="bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col flex-1 min-h-0 transform transition-all duration-300">
               <div className="p-6 border-b border-white/5 bg-gradient-to-r from-black/40 to-transparent flex items-center justify-between">
                 <h2 className="text-sm font-bold text-white uppercase tracking-[0.15em] flex items-center">
                   <Terminal className="w-4 h-4 mr-3 text-blue-400" />
@@ -207,8 +241,8 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column: Dashboard Results */}
-          <div className="lg:col-span-8 xl:col-span-8 flex flex-col h-full">
-            <div className={`bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 xl:p-10 shadow-2xl flex-1 flex flex-col relative overflow-hidden transition-all duration-700 h-full
+          <div className="lg:col-span-8 xl:col-span-8 flex flex-col h-full min-h-0">
+            <div className={`bg-[#111827]/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 xl:p-10 shadow-2xl flex-1 flex flex-col relative overflow-y-auto overflow-x-hidden transition-all duration-700 h-full min-h-0
                 ${results ? 'ring-1 ring-white/10' : ''}`}>
 
               {/* Background watermark icon */}
